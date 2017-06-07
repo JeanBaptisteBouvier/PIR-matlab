@@ -368,7 +368,7 @@ end
        b = uu_lvlh(2);
        c = uu_lvlh(3);
        p4(k-1) = plot(r_f(k,1) + a, r_f(k,3) + c,'bo');
-       p5(k-1) = plot(  a + err1,  c + err1,'ro');
+       % p5(k-1) = plot(  a + err1,  c + err1,'ro');
        str{k-1} = cellstr(sprintf('%s %d','HP', k-1));
  end
   pp = [p1 p2 p3 p4 p7 p8];
