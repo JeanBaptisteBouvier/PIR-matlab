@@ -9,7 +9,7 @@ default.plot.XZ             = false; % plot also the results in X-Z plane
 default.plot.YZ             = false; % plot also the results in Y-Z plane
 default.plot.diff_corr      = false; % plot the differential correction steps
 default.plot.orbit          = false; % prevent the plotting
-default.plot.firstPrimDisp  = true;  % display the Earth
+default.plot.firstPrimDisp  = false; % display the Earth
 
 
 %% Environment init
@@ -26,7 +26,7 @@ end
 
 dro = init_orbit(cr3bp, ...      % Parent CR3BP
     cr3bp.l2, ...                  % Parent libration point
-    cst.orbit.type.DRO, ...      % Planar lyapunov orbit
+    cst.orbit.type.DRO, ...        % Planar lyapunov orbit
     cst.orbit.family.PLANAR, ...   % Planar class (useless here, since it is a planar lyapunov orbit
     Ax, ...                        % Of Ax extension ~ 80 000 km
     cst);                          % Numerical constants
@@ -37,8 +37,8 @@ while Dro_data.x(i) > x
     i = i+1;
 end
 %linear modelisation between x(i-1) and x(i)
-a = (x-Dro_data.x(i-1)) / (Dro_data.x(i)-Dro_data.x(i-1));
-C = a * (Dro_data.C(i)-Dro_data.C(i-1)) + Dro_data.C(i-1);
+slope = (x-Dro_data.x(i-1)) / (Dro_data.x(i)-Dro_data.x(i-1));
+C = slope * (Dro_data.C(i)-Dro_data.C(i-1)) + Dro_data.C(i-1);
 
 v_y = sqrt(abs( x^2  - C + 2*( (1-cr3bp.mu)/abs(x+cr3bp.mu) + cr3bp.mu/abs(x-1+cr3bp.mu) ) ));
 yvg = [ x; 0; 0; 0 ; v_y ; 0];
