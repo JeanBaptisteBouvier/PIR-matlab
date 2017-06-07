@@ -66,7 +66,7 @@ cr3bp = settings.cr3bp;
 t_T = interp1(nro_T.alpha,nro_T.tv,theta_T,'spline');
 t_C = interp1(nro_C.alpha,nro_C.tv,theta_C,'spline');
 
-% BLB dovrebbe mostrare che in realt‡ il tutto non dipende da t.
+% BLB dovrebbe mostrare che in realt√† il tutto non dipende da t.
 t      = t_T;                     %defines the initial relative position of synodic/inertial frame
 x0_T   = state_time(t_T,nro_T)';
 x0_C   = state_time(t_C,nro_C)';
@@ -155,7 +155,7 @@ for i = 1:np-1
     times_cont.int = int_time;
     n_transf = i;
     
-    pop = Terminator_first_guess(choice, LVLH, SYN, times_lin, times_cont, settings, nro_T, phi0, n_transf);
+    pop = Terminator(choice, LVLH, SYN, times_lin, times_cont, settings, nro_T, phi0, n_transf);
     sol{i} = pop;
 end
 
