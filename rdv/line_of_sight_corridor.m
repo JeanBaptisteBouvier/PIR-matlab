@@ -6,6 +6,11 @@ function output = line_of_sight_corridor( alpha, beta, phi, TOF , x0, min_dist)
 % TOF is the time of flight [s]
 % x0 is the position when the chaserfirst arrives at the corridor [km]
 % min_dist is the minimum distance at which the chaser stop to maneuver [km]
+% 
+% The calculation of the time needed between each hold point is a
+% percentage of the TOF, corresponding to the ratio of the x-distance between
+% the 2 hold points and the total x-distance
+% 
 
 if abs(phi)> max(abs(alpha), abs(beta))
     error('The offset angle, phi, must have a smaller value than the corridor angles, alpha and beta')
@@ -27,7 +32,7 @@ elseif  0 > rel_angl && rel_angl > -alpha % in the lower corridor
 else % outside
     error('The chaser is initially out of the corridor, redefine parameters') 
 end
-delta_T = [abs(hold_points(1,1))*TOF/delta_X];
+delta_T = [abs(hold_points(1,1)-x0(1))*TOF/delta_X];
 A0 = norm(hold_points(1));
 if hold_points(1,1)<0 % to arrive from the good side
     A0 = -A0;
@@ -37,29 +42,30 @@ An = A0;
 while abs(An) > min_dist
     n = n+1;
     An = An * (sin(phi)/sin(alpha+beta+phi)); % recurrence
-    Bn = An * (sin(beta+alpha)/sin(phi));
+    
     if mod(n,2)== 0
         hold_points = [hold_points; An*[cos(beta) 0 -sin(beta) ]];
-        delta_T = [delta_T; abs(Bn*cos(alpha+phi))*TOF/delta_X];
     else 
         hold_points = [hold_points; An*[cos(alpha) 0 sin(alpha) ]];
-        delta_T = [delta_T; abs(Bn*cos(beta+phi))*TOF/delta_X];
     end
+    
 end
-
+for k=1:length(hold_points)-1
+    delta_T(k+1) = abs(hold_points(k+1,1)-hold_points(k,1))*TOF/delta_X;
+end
 output.hold_points =  hold_points;
-output.delta_T = delta_T;
+output.delta_T = delta_T';
 
 
 figure(13)
 hold on
 grid on
-plot(x0(1), x0(3), '*g') % Chaser initial position
-plot([A0*cos(alpha) -A0*cos(alpha)], [A0*sin(alpha) -A0*sin(alpha)], ':r') % Corridor
-plot([A0*cos(alpha) -A0*cos(alpha)], [-A0*sin(alpha) A0*sin(alpha)], ':r') % Corridor
+plot(x0(1), x0(3), 'go') % Chaser initial position
+plot([A0*cos(alpha) -A0*cos(alpha)], [A0*sin(alpha) -A0*sin(alpha)], 'r') % Corridor
+plot([A0*cos(alpha) -A0*cos(alpha)], [-A0*sin(alpha) A0*sin(alpha)], 'r') % Corridor
 plot([x0(1) hold_points(1,1)], [x0(3) hold_points(1,3)], 'b')
 for k = 1:n-1
-    plot(hold_points(k,1), hold_points(k,3), '*k')
+    plot(hold_points(k,1), hold_points(k,3), 'ko')
     plot([hold_points(k,1) hold_points(k+1,1)], [hold_points(k,3) hold_points(k+1,3)], 'b')
 end
 legend('Chaser initial position', 'Corridor')

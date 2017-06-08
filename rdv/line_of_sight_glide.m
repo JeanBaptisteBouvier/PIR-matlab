@@ -6,8 +6,13 @@ function output = line_of_sight_glide(alpha, phi, TOF, x0, min_dist)
 % TOF is the time of flight [s]
 % x0 is the position when the chaserfirst arrives at the corridor [km]
 % min_dist is the minimum distance at which the chaser stop to maneuver [km]
+% 
+% The calculation of the time needed between each hold point is a
+% percentage of the TOF, corresponding to the ratio of the z-distance between
+% the 2 hold points and the total z-distance
+% 
+% 
 
- 
 rel_angl = atan(x0(3)/x0(1));
 if -alpha > rel_angl && rel_angl > alpha % outside
     error('The chaser is initially out of the corridor, redefine parameters') 
@@ -33,15 +38,15 @@ end
 
 beta = alpha - phi;
 An = A0;
-delta_Z = abs(x0(3) - min_dist); % delta_Z is the z-distance of the chaser from the target in LVLH that is the distance travelled in the corridor 
+D = abs(x0(3) - min_dist) + abs(x0(1)-hold_points(1,1)); % Distance travelled in the corridor 
 n = 0;
-delta_T = [abs(hold_points(1,1))*TOF/delta_X];
+delta_T = [abs(hold_points(1,1)-x0(1))*TOF/D];
 while abs(An) > min_dist
     n = n+1;
     An = An * (sin(phi)/sin(alpha));
     Bn = An * (sin(beta)/sin(phi));
     hold_points = [hold_points; An*[cos(alpha + n*beta) 0 sin(alpha + n*beta) ]];
-    delta_T = [delta_T; abs(Bn * sin(n*beta))*TOF/delta_Z];
+    delta_T = [delta_T; abs(hold_points(n+1,3)-hold_points(n,3))*TOF/D];
 end
  
 
