@@ -35,7 +35,7 @@ beta = alpha - phi;
 An = A0;
 delta_Z = abs(x0(3) - min_dist); % delta_Z is the z-distance of the chaser from the target in LVLH that is the distance travelled in the corridor 
 n = 0;
-delta_T = [];
+delta_T = [abs(hold_points(1,1))*TOF/delta_X];
 while abs(An) > min_dist
     n = n+1;
     An = An * (sin(phi)/sin(alpha));
@@ -48,7 +48,7 @@ end
 output.hold_points =  hold_points;
 output.delta_T = delta_T;
 
-figure
+figure(13)
 hold on
 grid on
 plot([x0(1) hold_points(1,1)], [x0(3) hold_points(1,3)], 'b')
