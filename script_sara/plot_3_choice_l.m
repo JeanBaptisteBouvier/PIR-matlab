@@ -326,8 +326,7 @@ end
  p3 = plot3(Lam_lvlh(1,:), Lam_lvlh(2,:), Lam_lvlh(3,:),'r','LineWidth',1.5); %RDV trajectory
  p7 = plot3(w, e, t,'ko','LineWidth',1.5);
  
-%  Decomment the next line to visualize the effect of the first guess and comment
-%  the line after
+%  Decomment the next line to visualize the effect of the first guess 
 %  p8 = plot3(fg_lvlh(1,:), fg_lvlh(2,:), fg_lvlh(3, :),'b'); % First Guess
  p9 = sphere_plot(rad_sphere, 0, 0, 0); % Plot of the Approach Sphere in 3D centered on the Target
  
