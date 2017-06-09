@@ -248,7 +248,9 @@ p3 = plot3(x0_T(1), x0_T(2), x0_T(3),'mo');
 p4 = plot3(x0_C(1), x0_C(2), x0_C(3),'co','LineWidth',1.5); 
 p5 = plot3(Lam(:,7) + Lam(:,1), Lam(:,8) + Lam(:,2), Lam(:,9) + Lam(:,3),'r','LineWidth',1.5);
 p7 = plot3(w, e, t,'ko','LineWidth',1.5);
-
+rad_sphere = 2/cr3bp.L;  % radius of the Approach Sphere to ensure trajectory safety policies [km]
+p9 = sphere_plot(rad_sphere,w, e,t); % Approach Sphere centered on the Target
+   
    
 R_Moon = 1737/cr3bp.L; 
 MOON = imread('moon.jpg','jpg');
@@ -269,11 +271,11 @@ if np > 2
        p6(k-1) = plot3(r_f_syn(k,1) + a, r_f_syn(k,2) + b, r_f_syn(k,3) + c,'bo');
        str{k-1} = cellstr(sprintf('%s %d','HP', k-1));
    end
-   pp = [p1 p2 p3 p4 p5 p6 p7];
-   nom = ['Target Orbit' 'Chaser Orbit' 'Target initial position' 'Chaser initial position' 'RDV trajectory' str{:} 'Docking'];
+   pp = [p1 p2 p3 p4 p5 p6 p7 p9];
+   nom = ['Target Orbit' 'Chaser Orbit' 'Target initial position' 'Chaser initial position' 'RDV trajectory' str{:} 'Docking' ' Approach Sphere'];
    legend(pp,nom)
 else
-   legend([p1 p2 p3 p4 p5 p7],'Target Orbit', 'Chaser Orbit', 'Target initial position', 'Chaser initial position', 'RDV trajectory' ,'Docking')
+   legend([p1 p2 p3 p4 p5 p7 p9],'Target Orbit', 'Chaser Orbit', 'Target initial position', 'Chaser initial position', 'RDV trajectory' ,'Docking', ' Approach Sphere')
 end
 
  title('Rendezvous in the Synodic Frame')
@@ -323,12 +325,16 @@ for j = 1:length(Lam)
     Lam_lvlh(1:6, j) = rsyn2rlvlh_e(Lam_t(j), Lam(j,1:6)', Lam(j,7:12)',  cr3bp.mu);
 end
 
-for r = 1:size(fg,1)
-    fg_lvlh(1:6, r) = rsyn2rlvlh_e(Lam_t(r), fg(r,1:6)', fg(r,7:12)',  cr3bp.mu);
-end
+%  Decomment the next line to visualize the effect of the first guess
+% for r = 1:size(fg,1)
+%     fg_lvlh(1:6, r) = rsyn2rlvlh_e(Lam_t(r), fg(r,1:6)', fg(r,7:12)',  cr3bp.mu);
+% end
  p3 = plot3(Lam_lvlh(1,:), Lam_lvlh(2,:), Lam_lvlh(3,:),'r','LineWidth',1.5); %RDV trajectory
  p7 = plot3(w, e, t,'ko','LineWidth',1.5);
- p8 = plot3(fg_lvlh(1,:), fg_lvlh(2,:), fg_lvlh(3, :),'b'); % First Guess
+ 
+%  Decomment the next line to visualize the effect of the first guess
+%  p8 = plot3(fg_lvlh(1,:), fg_lvlh(2,:), fg_lvlh(3, :),'b'); % First Guess
+ p9 = sphere_plot(rad_sphere, 0, 0, 0); % Plot of the Approach Sphere in 3D centered on the Target
 
 if np > 2
   for k = 2:np-1
@@ -340,11 +346,18 @@ if np > 2
        p4(k-1) = plot3(r_f(k,1) + a, r_f(k,2) + b, r_f(k,3) + c,'bo');
        str{k-1} = cellstr(sprintf('%s %d','HP', k-1));
   end
-   pp = [p1 p2 p3  p4 p7 p8];
-   nom = ['Chaser initial position' 'Chaser Orbit' 'RDV trajectory' str{:} 'Docking' 'First Guess' ];
+  %  Decomment the next two lines to visualize the effect of the first guess and comment
+  %  the two lines after
+  %  pp = [p1 p2 p3  p4 p7 p8 p9];
+  %  nom = ['Chaser initial position' 'Chaser Orbit' 'RDV trajectory' str{:} 'Docking' 'First Guess' ' Approach Sphere'];
+   pp = [p1 p2 p3  p4 p7 p9];
+   nom = ['Chaser initial position' 'Chaser Orbit' 'RDV trajectory' str{:} 'Docking' ' Approach Sphere'];
    legend(pp,nom)
-  else
-   legend([p1 p2 p3 p7 p8],'Chaser initial position', 'Chaser Orbit', 'RDV trajectory', 'Docking', 'First Guess')
+else
+   %  Decomment the next line to visualize the effect of the first guess and comment
+   %  the line after
+   %  legend([p1 p2 p3 p7 p8 p9],'Chaser initial position', 'Chaser Orbit', 'RDV trajectory', 'Docking', 'First Guess',' Approach Sphere')
+   legend([p1 p2 p3 p7 p9],'Chaser initial position', 'Chaser Orbit', 'RDV trajectory', 'Docking',' Approach Sphere')
 end
 
    
@@ -362,7 +375,9 @@ end
  p2 = plot(yv_C_lvlh(1,:), yv_C_lvlh(3,:),'k');  %Chaser 
  p3 =  plot(Lam_lvlh(1,:), Lam_lvlh(3,:),'r','LineWidth',1.5); %RDV trajectory
  p7 = plot(w, t,'ko','LineWidth',1.5);
- p8 = plot(fg_lvlh(1,:), fg_lvlh(3,:),'b'); % First Guess
+%  Decomment the next line to visualize the effect of the first guess
+%  p8 = plot(fg_lvlh(1,:), fg_lvlh(3,:),'b'); % First Guess
+ p9 = circle(0,0,rad_sphere); % Plot of the Approach Sphere in 2D
 
  if np > 2
  for k = 2:np-1
@@ -374,11 +389,18 @@ end
        p4(k-1) = plot(r_f(k,1) + a, r_f(k,3) + c,'bo');
        str{k-1} = cellstr(sprintf('%s %d','HP', k-1));
  end
-  pp = [p1 p2 p3 p4 p7 p8];
-  nom = ['Chaser initial position' 'Chaser Orbit' 'RDV trajectory' str{:} 'Docking' 'First Guess' ];
+  %  Decomment the next two lines to visualize the effect of the first guess and comment
+  %  the two lines after
+  %   pp = [p1 p2 p3 p4 p7 p8 p9]; 
+  %   nom = ['Chaser initial position' 'Chaser Orbit' 'RDV trajectory' str{:} 'Docking' 'First Guess' ' Approach Sphere' ];
+  pp = [p1 p2 p3 p4 p7 p9];
+  nom = ['Chaser initial position' 'Chaser Orbit' 'RDV trajectory' str{:} 'Docking' ' Approach Sphere' ];
   legend(pp,nom)
  else
-   legend([p1 p2 p3 p7 p8],'Chaser initial position', 'Chaser Orbit', 'RDV trajectory', 'Docking', 'First Guess')
+   %  Decomment the next line to visualize the effect of the first guess and comment
+   %  the line after
+   %  legend([p1 p2 p3 p7 p8 p9],'Chaser initial position', 'Chaser Orbit', 'RDV trajectory', 'Docking', 'First Guess', ' Approach Sphere')
+   legend([p1 p2 p3 p7 p9],'Chaser initial position', 'Chaser Orbit', 'RDV trajectory', 'Docking', ' Approach Sphere')
 end
  
    
