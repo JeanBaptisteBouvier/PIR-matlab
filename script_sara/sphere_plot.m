@@ -6,5 +6,5 @@ x = x*r + x0;
 y = y*r + y0;
 z = z*r + z0;
 lightGrey = 0.8*[1 1 1]; % It looks better if the lines are lighter
-output = surface(x,y,z,'FaceColor', 'none','EdgeColor',lightGrey)
+output = surface(x,y,z,'FaceColor', 'none','EdgeColor',lightGrey);
 end
