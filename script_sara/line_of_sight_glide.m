@@ -51,13 +51,18 @@ output.delta_T = delta_T;
 figure(13)
 hold on
 grid on
-plot([x0(1) hold_points(1,1)], [x0(3) hold_points(1,3)], 'b')
-plot(x0(1), x0(3), '*g') % Chaser initial position
-plot([A0*cos(alpha) -A0*cos(alpha)], [A0*sin(alpha) -A0*sin(alpha)], ':r') % Corridor
-plot([A0*cos(alpha) -A0*cos(alpha)], [-A0*sin(alpha) A0*sin(alpha)], ':r') % Corridor
+p1 = plot([x0(1) hold_points(1,1)], [x0(3) hold_points(1,3)], 'b');
+p2 = plot(x0(1), x0(3), '*g'); % Chaser initial position
+p3 = plot([A0*cos(alpha) -A0*cos(alpha)], [A0*sin(alpha) -A0*sin(alpha)], ':r'); % Segment associated to the trigger angle
+p4 = plot([A0*cos(alpha) -A0*cos(alpha)], [-A0*sin(alpha) A0*sin(alpha)], ':r'); % Segment associated to the trigger angle
 for k = 1:n-1
-    plot(hold_points(k,1), hold_points(k,3), '*k')
-    plot([hold_points(k,1) hold_points(k+1,1)], [hold_points(k,3) hold_points(k+1,3)], 'b')
+    p5(k) = plot(hold_points(k,1), hold_points(k,3), '*k');
+    p6 = plot([hold_points(k,1) hold_points(k+1,1)], [hold_points(k,3) hold_points(k+1,3)], 'b');
+    str{k} = cellstr(sprintf('%s %d','HP', k));
 end
-
+  pp = [p2 p3 p5];
+  nom = ['Chaser initial position', 'Segment associated to the trigger angle', str{:}];
+  legend(pp,nom)
+  
+  
 end
