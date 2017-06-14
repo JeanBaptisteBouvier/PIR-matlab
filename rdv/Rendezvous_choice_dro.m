@@ -57,17 +57,16 @@ cr3bp = settings.cr3bp;
 TOF_cont = continuation.TOF_cont;
 int_time = continuation.int;
 
-t_T = interp1(dro_T.theta, dro_T.tv, theta_T, 'spline');
+t_T = interp1(dro_T.theta, dro_T.tv, theta_T, 'spline'); %defines the initial relative position of synodic/inertial frame
 t_C = interp1(dro_C.theta, dro_C.tv, theta_C, 'spline');
-
-t      = t_T;                     %defines the initial relative position of synodic/inertial frame
+                   
 x0_T   = state_time(t_T,dro_T)';  %initial position of the target in the synodic frame
 x0_C   = state_time(t_C,dro_C)';  %initial position of the chaser in the synodic frame
 x0_rel = x0_C - x0_T;             %synodic frame 
 phi0   = reshape(eye(6,6),[],1);
  
 % states in LVLH
-x0_LVLH     = rsyn2rlvlh(t, x0_rel, x0_T, cr3bp.mu);   %relative vector in LVLH with z-axis toward the Moon.
+x0_LVLH     = rsyn2rlvlh(t_T, x0_rel, x0_T, cr3bp.mu);   %relative vector in LVLH with z-axis toward the Moon.
 hold_points = hold_points_dim./cr3bp.L;                %adimensional distance for hold points in LVLH
 dock        = [0 0 0];                                 %position of the target in LVLH frame
 
@@ -89,9 +88,9 @@ end
 % build a time interval containing the discrete time inervals station with
 % the initial shift of the synodic frame
 t_f    = zeros(np,1);
-t_f(1) = t;   %penso si possa mettere direttamente t_T. Aspetta che BLB dimostri la non dip da t.
+t_f(1) = t_T;
 for i=1:np-1
-    t_f(i+1) = t+sum(TOF(1:i));  %t must be adimensional
+    t_f(i+1) = t_f(i) + TOF(i);  %t_f must be adimensional
 end
 
 % states in Synodic frame
@@ -100,7 +99,6 @@ hp_syn = zeros(m_hp,6);
 
 if m_hp > 0
    for i=1:m_hp
-       %corrected mistake down below : it is dro_T instead of nro_T
        % CoC of the hold_points from the LVLH into the Synodic frame
        hp_syn(i,:) = rlvlh2rsyn(t_f(i+1), [hold_points(i,:) 0 0 0]', state_time(t_f(i+1),dro_T)', cr3bp.mu);
    end
@@ -131,61 +129,34 @@ for i = 1:np-1
     times_lin.tt_2 = t_f(i+1);
     times_cont.TOF = TOF_cont(i);
     times_cont.int = int_time;
-    n_transf = i;
     
-    pop = Targeting(choice, LVLH, SYN, times_lin, times_cont, settings, dro_T, phi0, n_transf);
+    pop = Targeting(choice, LVLH, SYN, times_lin, times_cont, settings, dro_T, phi0, i);
     sol{i} = pop.sol;
 end
 
-%% Building Lambert
-
-Lam = cell(1,np-1);
-for i = 1:np-1
-    choice_help = sol{i}.help;
-    
-    if choice(1) && ~choice(2) && ~choice_help
-       Lam{i} = sol{i}.CW.Lam(:,1:12);
-       Lam_t{i} = sol{i}.CW.Lam_t;
-    end
-    
-    if choice(2) && ~choice(1) && ~choice_help
-       Lam{i} = sol{i}.SL.Lam(:,1:12);
-       Lam_t{i} = sol{i}.SL.Lam_t;
-    end
-
-    if choice(3) && ~choice(2) && ~choice_help
-       Lam{i} = sol{i}.LR.Lam(:,1:12);
-       Lam_t{i} = sol{i}.LR.Lam_t;
-    end
-    
-    if choice(1) && choice(2) && choice(3) && ~choice_help
-       Lam{i} = sol{i}.final.Lam(:,1:12);
-       Lam_t{i} = sol{i}.final.Lam_t;
-    end
-    
-    if choice(4) || choice_help
-       Lam{i} = sol{i}.cont.Lam(:,1:12);
-       Lam_t{i} = sol{i}.cont.Lam_t;
-    end
-end
 
  %% Building Hybrid Solution
 % Lam = building(choice, sol, np, it_max);
  
 %% deltaV calculation
+Lam = cell(1,np-1);
+for i=1:np-1
+    Lam{i} = sol{i}.Lam;
+end
 dV = dV_eval(Lam, x0_rel, np, cr3bp);
 
 %% Outputs
+% solution
 output.linear = sol;
-output.Lambert = Lam;
-
 % deltaV
 output.dV = dV;
  
 %% Plotting
 
+% Choice is the same vector for each hold points
+plot_rdv_DRO(choice, sol, r_f_syn, r_f, np, cr3bp, dro_T, dro_C, x0_T, x0_C, t_f, t_C);
 
-% for i = 1:np-1
-%     plot_rdv_DRO(choice, sol{i}.help, sol{i}, Lam{i}, Lam_t{i}, r_f_syn, np, cr3bp, dro_T, dro_C, x0_T, x0_C, i, t_f, t_C);  %Lambert
-% end
+
+
+
 end

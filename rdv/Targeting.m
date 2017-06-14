@@ -1,8 +1,27 @@
-function output = Targeting(choice, LVLH, SYN, times_lin, times_cont, settings, nro_T, phi0, n_transf)
+function output = Targeting(choice, LVLH, SYN, times_lin, times_cont, settings, dro_T, phi0, n_transf)
 % 
-% Return the solution 
-% and x1 : the first guess of the chosen method
+% Return the structur sol, it does not contain the name of the targeting algo
 % 
+% sol.err1   initial error due to the algo
+% sol.fg     first guess
+% sol.Lam    Lambert solution
+% sol.Lam_t  Times of the Lambert solution
+% sol.it     number of iterations
+% 
+% if choice == [1 1 1 0]
+% sol.err_CW    CW error
+% sol.err_SL    SL error
+% sol.err_LR    LR error
+% 
+% The code begins with if/end/if/end/... and no ifelse because in the case
+% choice = [1 1 1 0], the first three cases have to be done.
+% 
+% 
+% 
+% 
+% 
+
+%% Variables initialisation 
 
 r_LVLH = LVLH.r;
 v_LVLH = LVLH.v;
@@ -23,147 +42,90 @@ cr3bp = settings.cr3bp;
 
 choice_help = 0;
 
-%% Clohessy Wiltshire (LVLH)
-if choice(1)
-    [x_CW_LVLH, ~, ~] = Docking_CW(r_LVLH, v_LVLH, tt, tt_2, intervals, nro_T, cr3bp);
-    x_CW_syn = rlvlh2rsyn(tt, x_CW_LVLH', state_time(tt,nro_T)', cr3bp.mu)';
- 
-%   Initial error     
-    err_CW = Lambert_cycle_errors(x_CW_syn, r_next, state_time(tt, nro_T), phi0, T, cr3bp, options);
-    sol.CW.err1 = err_CW;
+%% Computation of the first errors
 
-    if  sum(choice) == 1
-        [fg, Transfer, Lam_t, it, err] = Lambert_cycle(x_CW_syn, r_next, state_time(tt, nro_T), phi0, T, toll, it_max, cr3bp, options, tt);
-        if it < it_max            
-           if symmetric_sol(Transfer) 
-%             Output generation
-              sol.CW.fg = fg;
-              sol.CW.Lam = Transfer;
-              sol.CW.Lam_t = Lam_t;
-              sol.CW.it = it;
-              sol.CW.err = err;
-           else
-              disp('Error: Symmetric Solution')
-              choice_help = 1;
-           end           
-        else
-          disp('MAX it reached')
-          choice_help = 1;
-        end
-    end    
+if choice(1)        %% Clohessy Wiltshire (LVLH)
+    [x_CW_LVLH, ~, ~] = Docking_CW(r_LVLH, v_LVLH, tt, tt_2, intervals, dro_T, cr3bp);
+    x_CW_syn = rlvlh2rsyn(tt, x_CW_LVLH', state_time(tt,dro_T)', cr3bp.mu)';
+    x_syn = x_CW_syn;
+    err_CW = Lambert_cycle_errors(x_CW_syn, r_next, state_time(tt, dro_T), phi0, T, cr3bp, options);
+    sol.err1 = err_CW;   % Initial error 
 end
-         
-%% Straight Line   
-if choice(2)
-   [x_SL_LVLH, ~, ~] = Docking_SL(r_LVLH, v_LVLH, T);
-    x_SL_syn         = rlvlh2rsyn(tt, x_SL_LVLH', state_time(tt,nro_T)', cr3bp.mu)';
 
-% Initial error      
-    err_SL = Lambert_cycle_errors(x_SL_syn, r_next, state_time(tt,nro_T), phi0, T, cr3bp, options);
-    sol.SL.err1 = err_SL;
+if  choice(2)  %% Straight Line
+    [x_SL_LVLH, ~, ~] = Docking_SL(r_LVLH, v_LVLH, T);
+    x_SL_syn  = rlvlh2rsyn(tt, x_SL_LVLH', state_time(tt,dro_T)', cr3bp.mu)';
+    x_syn = x_SL_syn;
+    err_SL = Lambert_cycle_errors(x_SL_syn, r_next, state_time(tt,dro_T), phi0, T, cr3bp, options);
+    sol.err1 = err_SL;   % Initial error
+end
+
+if choice(3) %% Linearized Relative
+    [x_LR_syn, ~, ~]  = Docking_LR(r_syn, v_syn, tt, tt_2, dro_T, intervals, cr3bp);
+    x_syn = x_LR_syn;
+    err_LR = Lambert_cycle_errors(x_LR_syn, r_next, state_time(tt,dro_T), phi0, T, cr3bp, options);
+    sol.err1 = err_LR;   % Initial error
+end
+
+
+
+%% Complete Computation
+
+if  sum(choice) == 1
+    [fg, Transfer, Lam_t, it, err] = Lambert_cycle(x_syn, r_next, state_time(tt, dro_T), phi0, T, toll, it_max, cr3bp, options, tt);
+    
+elseif sum(choice) == 3
+    sol.err1 = min([err_CW err_SL err_LR]);
+    sol.err_CW = err_CW;
+    sol.err_SL = err_SL;
+    sol.err_LR = err_LR;
    
-    if sum(choice) == 1
-       [fg, Transfer, Lam_t, it, err] = Lambert_cycle(x_SL_syn, r_next, state_time(tt,nro_T), phi0, T, toll, it_max, cr3bp, options, tt);
-       if it < it_max            
-           if symmetric_sol(Transfer)  
-%             Output generation
-              sol.SL.fg = fg;
-              sol.SL.Lam = Transfer;
-               sol.SL.Lam_t = Lam_t;
-              sol.SL.it = it;
-              sol.SL.err = err;
-           else
-              disp('Error: Symmetric Solution')
-              choice_help = 1;
-           end           
-        else
-          disp('MAX it reached')
-          choice_help = 1;
-        end
-    end    
-end
-       
-
-%% Linearized Relative
-if choice(3)
-   [x_LR_syn, ~, ~]  = Docking_LR(r_syn, v_syn, tt, tt_2, nro_T, intervals, cr3bp);
-  
-% Initial error
-    err_LR = Lambert_cycle_errors(x_LR_syn, r_next, state_time(tt,nro_T), phi0, T, cr3bp, options);
-    sol.LR.err1 = err_LR;
-
-    if sum(choice) == 1      
-        [fg, Transfer, Lam_t, it, err] = Lambert_cycle(x_LR_syn, r_next, state_time(tt,nro_T), phi0, T, toll, it_max, cr3bp, options, tt);
-        if it < it_max            
-           if symmetric_sol(Transfer)  
-%             Output generation
-              sol.LR.fg = fg;
-              sol.LR.Lam = Transfer;
-              sol.LR.Lam_t = Lam_t;
-              sol.LR.it = it;
-              sol.LR.err = err;
-           else
-              disp('Error: Symmetric Solution')
-              choice_help = 1;
-           end           
-        else
-          disp('MAX it reached')
-          choice_help = 1;
-        end
-    end    
+    if sol.err1 == err_CW
+        [fg, Transfer, Lam_t, it, err] = Lambert_cycle(x_CW_syn, r_next, state_time(tt, dro_T), phi0, T, toll, it_max, cr3bp, options, tt);
+        fprintf('C-W smallest error for transfer %d\n', n_transf) 
+    elseif sol.err1 == err_SL
+        [fg, Transfer, Lam_t, it, err] = Lambert_cycle(x_SL_syn, r_next, state_time(tt,dro_T), phi0, T, toll, it_max, cr3bp, options, tt);
+        fprintf('SL smallest error for transfer %d\n', n_transf)
+    else
+        [fg, Transfer, Lam_t, it, err] = Lambert_cycle(x_LR_syn, r_next, state_time(tt,dro_T), phi0, T, toll, it_max, cr3bp, options, tt);
+        fprintf('LR smallest error for transfer %d\n', n_transf)
+    end
+    
 end
 
-
-%% All three (hp: if the smallest error does not converge, nor the others)
-
-if choice(1) && choice(2) && choice(3)
-   err_min = min([err_CW err_SL err_LR]);
-   
-   if err_min == err_CW       
-       [fg, Transfer, Lam_t, it, err] = Lambert_cycle(x_CW_syn, r_next, state_time(tt, nro_T), phi0, T, toll, it_max, cr3bp, options, tt);
-%        sprintf('C-W smallest error for transfer %d', n_transf) 
-   elseif err_min == err_SL
-       [fg, Transfer, Lam_t, it, err] = Lambert_cycle(x_SL_syn, r_next, state_time(tt,nro_T), phi0, T, toll, it_max, cr3bp, options, tt);
-%        sprintf('SL smallest error for transfer %d', n_transf)
-   else
-       [fg, Transfer, Lam_t, it, err] = Lambert_cycle(x_LR_syn, r_next, state_time(tt,nro_T), phi0, T, toll, it_max, cr3bp, options, tt);
-%        sprintf('LR smallest error for transfer %d', n_transf)
-   end
-   
-   if it < it_max
-%        sprintf('Converged')
-       if symmetric_sol(Transfer)
-           % Output generation
-           sol.final.fg = fg;
-           sol.final.Lam = Transfer;
-           sol.final.Lam_t = Lam_t;
-           sol.final.it = it;
-           sol.final.err = err;
-       else
-           disp('Error: Symmetric Solution')
-           choice_help = 1;
-       end
-   else
-       sprintf('Failed to converge', n_transf)
-       choice_help = 1;
-   end
+if it < it_max            
+    if symmetric_sol(Transfer) 
+        % Output generation
+        sol.fg = fg;
+        sol.Lam = Transfer;
+        sol.Lam_t = Lam_t;
+        sol.it = it;
+        sol.err = err;
+    else
+        disp('Error: Symmetric Solution')
+        choice_help = 1;
+    end           
+else
+    disp('MAX iteration reached')
+    choice_help = 1;
 end
+    
 
-%% Continuation
+%% Continuation in case of problem
 
 if choice(4) || choice_help 
     if choice_help
         disp('Continuation Algorithm is here to help')
     end
     
-   [fg, Transfer, it, err] = Continuation(T, TOF_cont, int_cont, r_syn, v_syn, r_next, tt, nro_T, intervals, phi0, toll, options, it_max, cr3bp); 
+   [fg, Transfer, Lam_t, it, err] = Continuation(T, TOF_cont, int_cont, r_syn, v_syn, r_next, tt, dro_T, intervals, phi0, toll, options, it_max, cr3bp); 
 
-%  Output generation 
-   sol.cont.fg = fg; %fg means first guess
-   sol.cont.Lam = Transfer;
-   sol.cont.Lam_t = Lam_t;
-   sol.cont.it = it;
-   sol.cont.err = err;
+   % Output generation 
+   sol.fg = fg;
+   sol.Lam = Transfer;
+   sol.Lam_t = Lam_t;
+   sol.it = it;
+   sol.err = err;
 end
 
 %% Final output
