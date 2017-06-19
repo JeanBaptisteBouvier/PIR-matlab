@@ -1,20 +1,22 @@
 /*=========================================================================
- * ode78.c 
+ * ode78_rel.c 
  * 
  * C source file that contains the basic routines that appear in the mex files
- *  - ode78_cr3bp.c
+ *  - ode78_cr3bp_rel.c
  *  - ode78_cr3bp_event.c
  *
  * author:  BLB
  * year:    2015
- * version: 1.0
+ * author: JBB
+ * year:   2017
+ * version: 2.0
  *=======================================================================*/
 
 //-------------------------------------------------------------------------
 // Headers
 //-------------------------------------------------------------------------
 //Custom
-#include "ode78.h"
+#include "ode78_rel.h"
 
 //Precisions
 double eps_AbsTol=1e-15;
@@ -38,19 +40,19 @@ double eps_Root=1e-13;
  *  - double *y,  the current state, equal to y(tf) at the end of the process
  *
  *  Remarks:
- *   - The number of variables is either 6 (full state) 
- *          or 42 (full state + State Transition Matrix)
+ *   - The number of variables is either 12 (relative state + target state) 
+ *          or 48 (full state + State Transition Matrix)
  *
  *   - The vector field is computed through either the routine 
- *      cr3bp_derivatives_6 or cr3bp_derivatives_42
+ *      cr3bp_derivatives_rel_12 or cr3bp_derivatives_rel_48
  * ----------------------------------------------------------------------*/
-void ode78_cr3bp(double *t,                  //current time
-                 double *y,                  //current state
-                 double const *y0,           //initial condition
-                 double const t0,            //initial time
-                 double tf,                  //final time
-                 int nvar,                   //number of state variables
-                 double *mu)                 //cr3bp mass ratio
+void ode78_cr3bp_rel(double *t,                  //current time
+                     double *y,                  //current state
+                     double const *y0,           //initial condition
+                     double const t0,            //initial time
+                     double tf,                  //final time
+                     int nvar,                   //number of state variables
+                     double *mu)                 //cr3bp mass ratio
 {
     //---------------------------------------------------------------------
     // Initialize the integration structures
@@ -65,19 +67,19 @@ void ode78_cr3bp(double *t,                  //current time
     custom_ode_structure ode_s;
     switch(nvar)
     {
-        case 6: //@TODO
+        case 12: //@TODO
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 6, 1e-6, cr3bp_derivatives_6, NULL, mu);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 12, 1e-6, cr3bp_derivatives_rel_12, NULL, mu);
             break;
         }
-        case 42: //@TODO
+        case 48: //@TODO
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 42, 1e-6, cr3bp_derivatives_42, NULL, mu);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 48, 1e-6, cr3bp_derivatives_rel_48, NULL, mu);
             break;
         }
-        default:   //if nvar !=6 && nvar != 42, return without integration
+        default:   //if nvar !=12 && nvar != 48, return without integration
         {
-            mexPrintf("ode78_cr3bp. Error: wrong number nvar of state variables. nvar must 6 or 42. return.");
+            mexPrintf("ode78_cr3bp. Error: wrong number nvar of state variables. nvar must 12 or 48. return.");
             return;
         }
     
@@ -124,22 +126,22 @@ void ode78_cr3bp(double *t,                  //current time
  *  - double *yv, the state on the grid [0, ..., nGrid]
  *
  *  Remarks:
- *   - The number of variables is either 6 (full state) 
- *          or 42 (full state + State Transition Matrix)
+ *   - The number of variables is either 12 (relative state + target state) 
+ *          or 48 (full state + State Transition Matrix)
  *
  *   - The vector field is computed through either the routine 
- *      cr3bp_derivatives_6 or cr3bp_derivatives_42
+ *      cr3bp_derivatives_rel_12 or cr3bp_derivatives_rel_48
  * ----------------------------------------------------------------------*/
-void ode78_cr3bp_vec(double *t,                  //current time
-                     double *y,                  //current state
-                     double *tv,                 //time on a given grid of size [nGrid+1]
-                     double **yv,                //state on a given grid of size [nGrid+1]
-                     int    nGrid,               //size of the grid
-                     double const *y0,           //initial condition
-                     double const t0,            //initial time
-                     double tf,                  //final time
-                     int nvar,                   //number of state variables
-                     double *mu)                 //cr3bp mass ratio
+void ode78_cr3bp_vec_rel(double *t,                  //current time
+                         double *y,                  //current state
+                         double *tv,                 //time on a given grid of size [nGrid+1]
+                         double **yv,                //state on a given grid of size [nGrid+1]
+                         int    nGrid,               //size of the grid
+                         double const *y0,           //initial condition
+                         double const t0,            //initial time
+                         double tf,                  //final time
+                         int nvar,                   //number of state variables
+                         double *mu)                 //cr3bp mass ratio
 {
     //---------------------------------------------------------------------
     // Initialize the integration structures
@@ -154,19 +156,19 @@ void ode78_cr3bp_vec(double *t,                  //current time
     custom_ode_structure ode_s;
     switch(nvar)
     {
-        case 6:
+        case 12:
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 6, 1e-6, cr3bp_derivatives_6, NULL, mu);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 12, 1e-6, cr3bp_derivatives_rel_12, NULL, mu);
             break;
         }
-        case 42:
+        case 48:
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 42, 1e-6, cr3bp_derivatives_42, NULL, mu);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 48, 1e-6, cr3bp_derivatives_rel_48, NULL, mu);
             break;
         }
-        default:   //if nvar !=6 && nvar != 42, return without integration
+        default:   //if nvar !=12 && nvar != 48, return without integration
         {
-            mexPrintf("ode78_cr3bp. Error: wrong number nvar of state variables. nvar must 6 or 42. return.");
+            mexPrintf("ode78_cr3bp. Error: wrong number nvar of state variables. nvar must 12 or 48. return.");
             return;
         }
     
@@ -224,22 +226,22 @@ void ode78_cr3bp_vec(double *t,                  //current time
  *  - the function returns the last updated position on the grid (<= nGrid)
  *
  *  Remarks:
- *   - The number of variables is either 6 (full state) 
- *          or 42 (full state + State Transition Matrix)
+ *   - The number of variables is either 12 (relative state + target state) 
+ *          or 48 (full state + State Transition Matrix)
  *
  *   - The vector field is computed through either the routine 
- *      cr3bp_derivatives_6 or cr3bp_derivatives_42
+ *      cr3bp_derivatives_rel_12 or cr3bp_derivatives_rel_48
  * ----------------------------------------------------------------------*/
-int ode78_cr3bp_vec_var(double *t,                  //current time
-                        double *y,                  //current state
-                        double *tv,                 //time on a given grid of size [nGrid+1]
-                        double **yv,                //state on a given grid of size [nGrid+1]
-                        int    nGrid,               //size of the grid
-                        double const *y0,           //initial condition
-                        double const t0,            //initial time
-                        double tf,                  //final time
-                        int nvar,                   //number of state variables
-                        double *mu)                 //cr3bp mass ratio
+int ode78_cr3bp_vec_var_rel(double *t,                  //current time
+                            double *y,                  //current state
+                            double *tv,                 //time on a given grid of size [nGrid+1]
+                            double **yv,                //state on a given grid of size [nGrid+1]
+                            int    nGrid,               //size of the grid
+                            double const *y0,           //initial condition
+                            double const t0,            //initial time
+                            double tf,                  //final time
+                            int nvar,                   //number of state variables
+                            double *mu)                 //cr3bp mass ratio
 {
     //---------------------------------------------------------------------
     // Initialize the integration structures
@@ -254,19 +256,19 @@ int ode78_cr3bp_vec_var(double *t,                  //current time
     custom_ode_structure ode_s;
     switch(nvar)
     {
-        case 6:
+        case 12:
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 6, 1e-6, cr3bp_derivatives_6, NULL, mu);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 12, 1e-6, cr3bp_derivatives_rel_12, NULL, mu);
             break;
         }
-        case 42:
+        case 48:
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 42, 1e-6, cr3bp_derivatives_42, NULL, mu);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 48, 1e-6, cr3bp_derivatives_rel_48, NULL, mu);
             break;
         }
-        default:   //if nvar !=6 && nvar != 42, return without integration
+        default:   //if nvar !=12 && nvar != 48, return without integration
         {
-            mexPrintf("ode78_cr3bp. Error: wrong number nvar of state variables. nvar must 6 or 42. return.");
+            mexPrintf("ode78_cr3bp. Error: wrong number nvar of state variables. nvar must 12 or 48. return.");
             return 0;
         }
     
@@ -301,6 +303,7 @@ int ode78_cr3bp_vec_var(double *t,                  //current time
 }
 
 
+
 /*-------------------------------------------------------------------------
  * Integration of the BCP vector field of mass ratio mu, from the initial
  * state y0(t0) to the final time tf. 
@@ -317,19 +320,19 @@ int ode78_cr3bp_vec_var(double *t,                  //current time
  *  - double *y,  the current state, equal to y(tf) at the end of the process
  *
  *  Remarks:
- *   - The number of variables is either 6 (full state) 
- *          or 42 (full state + State Transition Matrix)
+ *   - The number of variables is either 12 (relative state & target state) 
+ *          or 48 (full state + State Transition Matrix)
  *
  *   - The vector field is computed through either the routine 
- *      bcp_derivatives_6 or bcp_derivatives_42
+ *      bcp_derivatives_rel_12 or bcp_derivatives_rel_48
  * ----------------------------------------------------------------------*/
-void ode78_bcp(double *t,                    //current time
-                 double *y,                  //current state
-                 double const *y0,           //initial condition
-                 double const t0,            //initial time
-                 double tf,                  //final time
-                 int nvar,                   //number of state variables
-                 double *param)              //bcp parameters
+void ode78_bcp_rel(double *t,                  //current time
+                   double *y,                  //current state
+                   double const *y0,           //initial condition
+                   double const t0,            //initial time
+                   double tf,                  //final time
+                   int nvar,                   //number of state variables
+                   double *param)              //bcp parameters
 {
     //---------------------------------------------------------------------
     // Initialize the integration structures
@@ -344,19 +347,19 @@ void ode78_bcp(double *t,                    //current time
     custom_ode_structure ode_s;
     switch(nvar)
     {
-        case 6:
+        case 12:
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 6, 1e-6, bcp_derivatives_6, NULL, param);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 12, 1e-6, bcp_derivatives_rel_12, NULL, param);
             break;
         }
-        case 42:
+        case 48:
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 42, 1e-6, bcp_derivatives_42, NULL, param);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 48, 1e-6, bcp_derivatives_rel_48, NULL, param);
             break;
         }
-        default:   //if nvar !=6 && nvar != 42, return without integration
+        default:   //if nvar !=12 && nvar != 48, return without integration
         {
-            mexPrintf("ode78_bcp. Error: wrong number nvar of state variables. nvar must 6 or 42. return.");
+            mexPrintf("ode78_bcp_rel. Error: wrong number nvar of state variables. nvar must 12 or 48. return.");
             return;
         }
     
@@ -403,22 +406,22 @@ void ode78_bcp(double *t,                    //current time
  *  - double *yv, the state on the grid [0, ..., nGrid]
  *
  *  Remarks:
- *   - The number of variables is either 6 (full state) 
- *          or 42 (full state + State Transition Matrix)
+ *   - The number of variables is either 12 (relative state & target state) 
+ *          or 48 (full state + State Transition Matrix)
  *
  *   - The vector field is computed through either the routine 
- *      bcp_derivatives_6 or bcp_derivatives_42
+ *      bcp_derivatives_rel_12 or bcp_derivatives_rel_48
  * ----------------------------------------------------------------------*/
-void ode78_bcp_vec(double *t,                  //current time
-                     double *y,                  //current state
-                     double *tv,                 //time on a given grid of size [nGrid+1]
-                     double **yv,                //state on a given grid of size [nGrid+1]
-                     int    nGrid,               //size of the grid
-                     double const *y0,           //initial condition
-                     double const t0,            //initial time
-                     double tf,                  //final time
-                     int nvar,                   //number of state variables
-                     double *param)              //bcp parameters
+void ode78_bcp_vec_rel(double *t,                  //current time
+                       double *y,                  //current state
+                       double *tv,                 //time on a given grid of size [nGrid+1]
+                       double **yv,                //state on a given grid of size [nGrid+1]
+                       int    nGrid,               //size of the grid
+                       double const *y0,           //initial condition
+                       double const t0,            //initial time
+                       double tf,                  //final time
+                       int nvar,                   //number of state variables
+                       double *param)              //bcp parameters
 {
     //---------------------------------------------------------------------
     // Initialize the integration structures
@@ -433,19 +436,19 @@ void ode78_bcp_vec(double *t,                  //current time
     custom_ode_structure ode_s;
     switch(nvar)
     {
-        case 6:
+        case 12:
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 6, 1e-6, bcp_derivatives_6, NULL, param);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 12, 1e-6, bcp_derivatives_rel_12, NULL, param);
             break;
         }
-        case 42:
+        case 48:
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 42, 1e-6, bcp_derivatives_42, NULL, param);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 48, 1e-6, bcp_derivatives_rel_48, NULL, param);
             break;
         }
-        default:   //if nvar !=6 && nvar != 42, return without integration
+        default:   //if nvar !=12 && nvar != 48, return without integration
         {
-            mexPrintf("ode78_cr3bp. Error: wrong number nvar of state variables. nvar must 6 or 42. return.");
+            mexPrintf("ode78_cr3bp. Error: wrong number nvar of state variables. nvar must 12 or 48. return.");
             return;
         }
     
@@ -503,22 +506,22 @@ void ode78_bcp_vec(double *t,                  //current time
  *  - double *yv, the state on the grid [0, ..., nGrid]
  *
  *  Remarks:
- *   - The number of variables is either 6 (full state) 
- *          or 42 (full state + State Transition Matrix)
+ *   - The number of variables is either 12 (relative state & target state) 
+ *          or 48 (full state + State Transition Matrix)
  *
  *   - The vector field is computed through either the routine 
- *      bcp_derivatives_6 or bcp_derivatives_42
+ *      bcp_derivatives_rel_12 or bcp_derivatives_rel_48
  * ----------------------------------------------------------------------*/
-int ode78_bcp_vec_var(double *t,                  //current time
-                      double *y,                  //current state
-                      double *tv,                 //time on a given grid of size [nGrid+1]
-                      double **yv,                //state on a given grid of size [nGrid+1]
-                      int    nGrid,               //size of the grid
-                      double const *y0,           //initial condition
-                      double const t0,            //initial time
-                      double tf,                  //final time
-                      int nvar,                   //number of state variables
-                      double *param)              //bcp parameters
+int ode78_bcp_vec_var_rel(double *t,                  //current time
+                          double *y,                  //current state
+                          double *tv,                 //time on a given grid of size [nGrid+1]
+                          double **yv,                //state on a given grid of size [nGrid+1]
+                          int    nGrid,               //size of the grid
+                          double const *y0,           //initial condition
+                          double const t0,            //initial time
+                          double tf,                  //final time
+                          int nvar,                   //number of state variables
+                          double *param)              //bcp parameters
 {
     //---------------------------------------------------------------------
     // Initialize the integration structures
@@ -533,19 +536,19 @@ int ode78_bcp_vec_var(double *t,                  //current time
     custom_ode_structure ode_s;
     switch(nvar)
     {
-        case 6:
+        case 12:
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 6, 1e-6, bcp_derivatives_6, NULL, param);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 12, 1e-6, bcp_derivatives_rel_12, NULL, param);
             break;
         }
-        case 42:
+        case 48:
         {
-            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 42, 1e-6, bcp_derivatives_42, NULL, param);
+            init_ode_structure(&ode_s,   T, T_root, eps_AbsTol, eps_RelTol, eps_Root, eps_Diff, 48, 1e-6, bcp_derivatives_rel_48, NULL, param);
             break;
         }
-        default:   //if nvar !=6 && nvar != 42, return without integration
+        default:   //if nvar !=12 && nvar != 48, return without integration
         {
-            mexPrintf("ode78_cr3bp. Error: wrong number nvar of state variables. nvar must 6 or 42. return.");
+            mexPrintf("ode78_cr3bp. Error: wrong number nvar of state variables. nvar must 12 or 48. return.");
             return 0;
         }
     

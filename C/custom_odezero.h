@@ -2,9 +2,9 @@
 #define CUSTOM_ODEZERO_H_INCLUDED
 
 //GSL
-#include <gsl/gsl_odeiv2.h>
-#include <gsl/gsl_interp.h>
-#include <gsl/gsl_roots.h>
+#include "../lib/gsl/gsl_odeiv2.h"
+#include "../lib/gsl/gsl_interp.h"
+#include "../lib/gsl/gsl_roots.h"
 
 //Custom
 #include "define_env.h"

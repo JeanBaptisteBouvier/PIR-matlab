@@ -1,7 +1,7 @@
 #ifndef CUSTOM_H_INCLUDED
 #define CUSTOM_H_INCLUDED
 
-#include <gsl/gsl_matrix.h>
+#include "../lib/gsl/gsl_matrix.h"
 
 
 void custom_vectorToMatrix(gsl_matrix *m, double y[], int rows, int columns, int shift);

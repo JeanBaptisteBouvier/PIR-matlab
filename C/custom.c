@@ -1,9 +1,10 @@
 #include <math.h>
-#include <gsl/gsl_matrix.h>
+#include "../lib/gsl/gsl_matrix.h"
 #include "custom.h"
 /**
 * \brief custom routine to transform vector to matrix with a given shift in the initial vector
 **/
+
 void custom_vectorToMatrix(gsl_matrix *m, double y[], int rows, int columns, int shift)
 {
     int i,j,k;
@@ -15,9 +16,11 @@ void custom_vectorToMatrix(gsl_matrix *m, double y[], int rows, int columns, int
         }
 }
 
+
 /**
 * \brief custom routine to transform matrix to vector with a given shift in the final vector
 **/
+
 void custom_matrixToVector(double y[], gsl_matrix *m, int rows, int columns, int shift)
 {
     int i,j,k;
@@ -28,3 +31,36 @@ void custom_matrixToVector(double y[], gsl_matrix *m, int rows, int columns, int
             y[shift+k-1] = gsl_matrix_get(m, i-1, j-1);
         }
 }
+
+
+
+/*
+ * Line before columns
+ *
+ */
+
+/*
+void custom_vectorToMatrix(gsl_matrix *m, double y[], int rows, int columns, int shift)
+{
+    int i,j;
+    int k = shift-1;
+    for(j=1; j<=columns; j++)
+        for(i=1; i<=rows ; i++)
+        {
+            k++;
+            gsl_matrix_set(m, i-1, j-1, y[k]);
+        }
+}
+
+void custom_matrixToVector(double y[], gsl_matrix *m, int rows, int columns, int shift)
+{
+    int i,j;
+    int k = shift-1;
+    for(j=1; j<=columns; j++)
+        for(i=1; i<=rows ; i++)
+        {
+            k++;
+            y[k] = gsl_matrix_get(m, i-1, j-1);
+        }
+}
+*/

@@ -2,8 +2,8 @@
 #define CUSTOM_ODE_H_INCLUDED
 
 //GSL
-#include <gsl/gsl_odeiv2.h>
-#include <gsl/gsl_roots.h>
+#include "../lib/gsl/gsl_odeiv2.h"
+#include "../lib/gsl/gsl_roots.h"
 
 typedef struct custom_ode_structure custom_ode_structure;
 struct custom_ode_structure

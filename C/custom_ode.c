@@ -2,8 +2,8 @@
 #include "custom_ode.h"
 
 //GSL
-#include <gsl/gsl_odeiv2.h>
-#include <gsl/gsl_errno.h>
+#include "../lib/gsl/gsl_odeiv2.h"
+#include "../lib/gsl/gsl_errno.h"
 
 void update_ode_structure(custom_ode_structure *ode_s,
                         const gsl_odeiv2_step_type *T,
