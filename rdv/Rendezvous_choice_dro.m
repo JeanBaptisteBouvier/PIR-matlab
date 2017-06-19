@@ -146,17 +146,13 @@ end
 dV = dV_eval(Lam, x0_rel, np, cr3bp);
 
 %% Outputs
-% solution
-output.linear = sol;
-% deltaV
+output.sol = sol;
 output.dV = dV;
  
 %% Plotting
 
 % Choice is the same vector for each hold points
-plot_rdv_DRO(choice, sol, r_f_syn, r_f, np, cr3bp, dro_T, dro_C, x0_T, x0_C, t_f, t_C);
-
-
+% plot_rdv_DRO(choice, sol, r_f_syn, r_f, np, cr3bp, dro_T, dro_C, x0_T, x0_C, t_f, t_C);
 
 
 end

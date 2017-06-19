@@ -3,9 +3,9 @@ function [dro, default, cr3bp] = A_DRO(Ax, default, cst)
 
 %% Inner changes from default parameters
 
-% 1. Decomment the next line to use only MATLAB routines (very slow!)
+% 1. Choose between MEX and MATLAB
 %--------------------------------------------------------------------------
-default.computation.type = cst.computation.MATLAB;
+default.computation.type = cst.computation.MEX;
 
 % 3. Decomment the next lines to change the plotting options
 %--------------------------------------------------------------------------
@@ -24,7 +24,6 @@ load Dro_data;
 
 %% Orbit init & computation for a planar lyapunov orbit
 
-% Ax = 80000; % between 16'000 km and 349'000km of radius
 x = 1 - cr3bp.mu - (Ax/cr3bp.L);
 
 
@@ -32,22 +31,14 @@ if x < 0.077868572624673 || x > 0.948773910611288 % extrem values of Dro_data.x
     error('Ax value is out of range');         
 end
 
-dro = init_orbit(cr3bp, ...      % Parent CR3BP
+dro = init_orbit(cr3bp, ...        % Parent CR3BP
     cr3bp.l2, ...                  % Parent libration point
-    cst.orbit.type.DRO, ...      % Planar lyapunov orbit
+    cst.orbit.type.DRO, ...        % Based on a Planar lyapunov orbit
     cst.orbit.family.PLANAR, ...   % Planar class (useless here, since it is a planar lyapunov orbit
     Ax, ...                        % Of Ax extension ~ 80 000 km
     cst);                          % Numerical constants
 
-% Search for x position in Dro_data
-i = 1;
-while Dro_data.x(i) > x
-    i = i+1;
-end
-%linear modelisation between x(i-1) and x(i)
-a = (x-Dro_data.x(i-1)) / (Dro_data.x(i)-Dro_data.x(i-1));
-C = a * (Dro_data.C(i)-Dro_data.C(i-1)) + Dro_data.C(i-1);
-
+C = interp1(Dro_data.x, Dro_data.C, x);
 v_y = sqrt(abs( x^2  - C + 2*( (1-cr3bp.mu)/abs(x+cr3bp.mu) + cr3bp.mu/abs(x-1+cr3bp.mu) ) ));
 yvg = [ x; 0; 0; 0 ; v_y ; 0];
 dro = orbit_refinement(cr3bp, dro, default, yvg, cst);

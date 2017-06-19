@@ -8,7 +8,12 @@ it            = -1;
 i             = 1;
  
 while err > toll && it < it_max
-    [Lam_t, Lam] = ode113(@(t,y)crtbp(t,y,cr3bp.mu),[tt TOF+tt],[x0_rel, x0_T, phi0']', options); 
+    % MATLAB slow computation, working on Windows and Linux 
+%     [Lam_t, Lam] = ode113(@(t,y)crtbp(t,y,cr3bp.mu),[0 TOF],[x0_rel, x0_T, phi0']', options); 
+
+    % MEX fast computation, on LINUX only
+    [~, ~, Lam_t, Lam] = ode78_cr3bp_rel([0 TOF], [x0_rel, x0_T, phi0']', cr3bp.mu);
+    Lam = Lam_shape(Lam); % change lines in columns
     
     Phi_Lam = reshape(Lam(end,13:48),6,6);
     Phi_rv = Phi_Lam(1:3,4:6); 
